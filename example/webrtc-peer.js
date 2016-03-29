@@ -2,37 +2,56 @@
 
 'use strict';
 
+var defaultNickname = "anonymous";
+var nickname = process.browser ? window.location.hash.substr(1) || defaultNickname : "venus";
+var connectToNicknames = [
+    "hercules",
+    "jupiter"
+];
+var value = JSON.stringify('buffalo sabres are great');
 
-var nodeId = "venus";
 var Hash = require('bitcore-lib').crypto.Hash;
 var kademlia = require('kad');
 var WebRTC = require('kad-webrtc');
 var wrtc = require('wrtc');
-var SignalClient = require('./webrtc/signal-client-node');
-var signalClient = new SignalClient(nodeId);
+var SignalClient = require('./webrtc/signal-client');
+var signalClient = new SignalClient(nickname);
 var webSocket = signalClient.webSocket;
+var storage;
+
+if (process.browser) { // use LocalStorage for browser and MemStore for node.js
+    wrtc = undefined; // asssure wrtc is undefined when in browser
+    storage = new kademlia.storage.LocalStorage('webrtc-peer:' + nickname);
+} else {
+    storage = new kademlia.storage.MemStore();
+}
 
 webSocket.on('open', function () {
+    console.log('use nickname', nickname);
 
-    var node = new kademlia.Node({
-        // ...
-        transport: WebRTC(WebRTC.Contact({nick: nodeId}), {
+    var webrtcDHT = new kademlia.Node({
+        transport: WebRTC(WebRTC.Contact({nick: nickname}), {
             wrtc: wrtc,
             signaller: signalClient // see examples
         }),
-        storage: new kademlia.storage.MemStore()
+        storage: storage
     });
 
-    var connect = function (peerId) {
-        node.connect({nick: peerId}, logConnect);
+    for (var index in connectToNicknames) {
+        connectWebRTC(connectToNicknames[index]);
     }
 
-    var get = function (key, callback) {
-        node.get(key, logGet);
-    }
+    setTimeout(function () {
+        var hashKey = getHash(value);
+        webrtcDHT.put(hashKey, value, logPut);
+        setTimeout(function () {
+            webrtcDHT.get(hashKey, logGet);
+        }, 10000);
 
-    var put = function (key, value, callback) {
-        node.put(key, value, logPut);
+    }, 10000);
+
+    function connectWebRTC(peerId) {
+        webrtcDHT.connect({nick: peerId}, logConnect);
     }
 
     function logConnect() {
@@ -46,20 +65,6 @@ webSocket.on('open', function () {
     function logPut() {
         console.log('put------------------', arguments);
     }
-
-    connect('hercules');
-    var value = JSON.stringify('buffalo sabres are great');
-    var hashKey = getHash(value);
-    console.log(value, hashKey);
-    setTimeout(function () {
-        put(hashKey, value);
-        setTimeout(function () {
-            get(hashKey);
-        }, 10000);
-
-    }, 10000);
-
-
 });
 
 function getHash(value) {

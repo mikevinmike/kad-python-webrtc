@@ -3,7 +3,7 @@
 'use strict';
 
 var EventEmitter = require('events').EventEmitter;
-var webSocket = require('./web-socket-node');
+var webSocket = require('./web-socket');
 var inherits = require('util').inherits;
 
 inherits(SignalClient, EventEmitter);
@@ -21,23 +21,25 @@ function SignalClient(nick) {
         webSocket.send(JSON.stringify({announceNick: nick}));
     });
 
-    webSocket.on('message', function (message) {
-        // var parsed = JSON.parse(message);
-        //  console.log('message', message);
-        var parsed = message;
-        if (typeof message === 'string') {
-            try {
-                parsed = JSON.parse(message);
-            } catch (ex) {
-                console.error('no worries', ex);
-            }
-        }
-        if (typeof parsed == 'object' && nick === parsed.recipient) {
-            EventEmitter.prototype.emit.call(signalClient, nick, parsed.message);
+    webSocket.on('message', process.browser ? _browserOnMessage : _nodeOnMessage);
+
+    function _browserOnMessage(event) {
+        var parsedMessage = JSON.parse(event.data);
+        _onMessage(parsedMessage);
+    }
+
+    function _nodeOnMessage(message) {
+        var parsedMessage = JSON.parse(message);
+        _onMessage(parsedMessage);
+    }
+
+    function _onMessage(parsedMessage) {
+        if (typeof parsedMessage == 'object' && nick === parsedMessage.recipient) {
+            EventEmitter.prototype.emit.call(signalClient, nick, parsedMessage.message);
         } else {
-            console.error('somtehing wrong with message', message);
+            console.error('something wrong with message', message);
         }
-    });
+    }
 }
 
 /**

@@ -2,6 +2,19 @@
 
 'use strict';
 
+var DHT_UDP_PORT = 6265;  // blockstored defaults to port 6264
+var contactInfo = {
+    address: '127.0.0.1',
+    port: DHT_UDP_PORT + 200
+};
+var DEFAULT_DHT_SERVERS = [
+    new Seed('router.bittorrent.com', 6881),
+    new Seed('dht.onename.com', DHT_UDP_PORT),
+    new Seed('dht.halfmoonlabs.com', DHT_UDP_PORT),
+    new Seed('127.0.0.1', DHT_UDP_PORT),
+    new Seed('127.0.0.1', DHT_UDP_PORT + 100)
+];
+var value = JSON.stringify('buffalo sabres are great');
 
 var kad = require('kad');
 var dns = require('dns');
@@ -11,52 +24,37 @@ var Hash = require('bitcore-lib').crypto.Hash;
 var UDPPythonRpc = require('..').UDPPythonRpc;
 
 
-var DHT_UDP_PORT = 6265;  // blockstored defaults to port 6264
-var DEFAULT_DHT_SERVERS = [
-    new Seed('router.bittorrent.com', 6881),
-    new Seed('dht.onename.com', DHT_UDP_PORT),
-    new Seed('dht.halfmoonlabs.com', DHT_UDP_PORT),
-    new Seed('127.0.0.1', DHT_UDP_PORT),
-    new Seed('127.0.0.1', DHT_UDP_PORT + 100),
-    new Seed('127.0.0.1', DHT_UDP_PORT + 200)
-];
-
-function Seed(address, port) {
-    this.address = address;
-    this.port = port;
-}
-// var seed = DEFAULT_DHT_SERVERS[0];
-
-var dht = new kad.Node({
-    transport: UDPPythonRpc(kad.contacts.AddressPortContact({
-        address: '127.0.0.1',
-        port: DHT_UDP_PORT + 200
-    })),
+var pythonDHT = new kad.Node({
+    transport: UDPPythonRpc(kad.contacts.AddressPortContact(contactInfo)),
     storage: kad.storage.MemStore()
 });
-var value = JSON.stringify('buffalo sabres are great');
 
-function connect(seed) {
+for (var index in DEFAULT_DHT_SERVERS) {
+    connectPythonRpc(DEFAULT_DHT_SERVERS[index]);
+}
+
+
+function connectPythonRpc(seed) {
     console.log('attempt to connect', seed);
     if (!isIP(seed.address)) {
         dns.lookup(seed.address, function (err, ip) {
             seed.address = ip;
-            connect(seed);
+            connectPythonRpc(seed);
         });
         return;
     }
-    dht.connect(seed, function (err) {
+    pythonDHT.connect(seed, function (err) {
         console.log('seed connect', seed, err);
 
         setTimeout(function () {
             console.log('lookup....................................');
-            var hashkey = getHash(value);
-            console.log('hashkey', hashkey);
-            // dht.put(hashkey, value, function() {
+            var hashKey = getHash(value);
+            console.log('hashKey', hashKey);
+            // pythonDHT.put(hashKey, value, function() {
             //     console.log('after store', arguments);
             //     setTimeout(function () {
 
-            dht.get(hashkey, function () {
+            pythonDHT.get(hashKey, function () {
                 console.log('after get', arguments)
             })
 
@@ -72,4 +70,7 @@ function getHash(value) {
     return hash_sha1_sha256ripemd160;
 }
 
-connect(DEFAULT_DHT_SERVERS[4]);
+function Seed(address, port) {
+    this.address = address;
+    this.port = port;
+}

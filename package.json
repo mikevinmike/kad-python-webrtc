@@ -1,0 +1,19 @@
+{
+  "name": "kad-python-webrtc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bitcore-lib": "^0.13.14",
+    "kad": "^1.5.3",
+    "kad-webrtc": "^1.4.0",
+    "merge": "^1.2.0",
+    "msgpack-lite": "^0.1.17",
+    "ws": "^1.0.1"
+  }
+}

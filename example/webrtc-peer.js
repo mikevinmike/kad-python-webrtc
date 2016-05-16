@@ -3,12 +3,14 @@
 'use strict';
 
 var defaultNickname = "anonymous";
-var nickname = process.browser ? window.location.hash.substr(1) || defaultNickname : "venus";
+var nickname = process.browser ? window.location.hash.substr(1) || defaultNickname : "hercules";
 var connectToNicknames = [
-    "hercules",
-    "jupiter"
+    "venus",
+    "jupiter",
+    "hercules"
 ];
 var value = JSON.stringify('buffalo sabres are great');
+var key = '1a587366368aaf8477d5ddcea2557dcbcc67073e';
 
 var Hash = require('bitcore-lib').crypto.Hash;
 var kademlia = require('kad');
@@ -42,15 +44,16 @@ webSocket.on('open', function () {
     }
 
     setTimeout(function () {
-        var hashKey = getHash(value);
-        webrtcDHT.put(hashKey, value, logPut);
-        setTimeout(function () {
+        var hashKey = getFullHashFromHash(key);
+        // webrtcDHT.put(hashKey, value, logPut);
+        setInterval(function () {
             webrtcDHT.get(hashKey, logGet);
         }, 10000);
 
     }, 10000);
 
     function connectWebRTC(peerId) {
+        console.log('try to connect with', peerId);
         webrtcDHT.connect({nick: peerId}, logConnect);
     }
 
@@ -67,8 +70,13 @@ webSocket.on('open', function () {
     }
 });
 
+
 function getHash(value) {
     var hash_sha256ripemd160 = Hash.sha256ripemd160(new Buffer(value)).toString('hex');
-    var hash_sha1_sha256ripemd160 = Hash.sha1(new Buffer(hash_sha256ripemd160)).toString('hex');
+    return getFullHashFromHash(hash_sha256ripemd160);
+}
+
+function getFullHashFromHash(hash) {
+    var hash_sha1_sha256ripemd160 = Hash.sha1(new Buffer(hash)).toString('hex');
     return hash_sha1_sha256ripemd160;
 }

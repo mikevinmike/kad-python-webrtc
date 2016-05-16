@@ -18,7 +18,8 @@ var DEFAULT_DHT_SERVERS = [
     new Seed('dht.halfmoonlabs.com', DHT_UDP_PORT),
     new Seed('127.0.0.1', DHT_UDP_PORT)
 ];
-var value = JSON.stringify({'another': 'test4'});
+var value = ('{"avatar": {"url": "https://s3.amazonaws.com/kd4/fredwilson1"}, "bio": "I am a VC", "bitcoin": {"address": "1Fbi3WDPEK6FxKppCXReCPFTgr9KhWhNB7"}, "cover": {"url": "https://s3.amazonaws.com/dx3/fredwilson"}, "facebook": {"proof": {"url": "https://facebook.com/fred.wilson.963871/posts/10100401430876108"}, "username": "fred.wilson.963871"}, "graph": {"url": "https://s3.amazonaws.com/grph/fredwilson"}, "location": {"formatted": "New York City"}, "name": {"formatted": "Fred Wilson"}, "twitter": {"proof": {"url": "https://twitter.com/fredwilson/status/533040726146162689"}, "username": "fredwilson"}, "v": "0.2", "website": "http://avc.com"}')
+var key = '1a587366368aaf8477d5ddcea2557dcbcc67073e';// blockchain entry: fredwilson.id: '1a587366368aaf8477d5ddcea2557dcbcc67073e';
 
 var kad = require('kad');
 var dns = require('dns');
@@ -75,15 +76,15 @@ webSocket.on('open', function () {
             console.log(nickname + ' connected');
             setTimeout(function () {
                 var hashKey = getHash(value);
-                webrtcDHT.put(hashKey, value, function () {
-                    console.log('after store', arguments);
-                    setTimeout(function () {
-                        pythonDHT.get(hashKey, function () {
-                            console.log('after get', arguments)
-                        })
-                    }, 5000)
-
-                });
+                // webrtcDHT.put(hashKey, value, function () {
+                //     console.log('after store', arguments);
+                //     setTimeout(function () {
+                //         pythonDHT.get(hashKey, function () {
+                //             console.log('after get', arguments)
+                //         })
+                //     }, 5000)
+                //
+                // });
 
             }, 10000)
 
@@ -108,17 +109,23 @@ function connectPythonRpc(seed) {
     pythonDHT.connect(seed, function (err) {
         console.log('seed connect', seed, err);
 
-        setTimeout(function () {
+        // setTimeout(function() {
+        //     var hashKey = getHash(value);
+        //     pythonDHT.put(hashKey, value, function () {
+        //         console.log('after store', arguments);
+        //     });
+        // }, 5000);
+        setInterval(function () {
             console.log('lookup....................................');
-            var hashKey = getHash(value);
+            var hashKey = getFullHashFromHash(key);
             console.log('hashKey', hashKey);
-            pythonDHT.put(hashKey, value, function () {
-                console.log('after store', arguments);
-                pythonDHT.get(hashKey, function () {
-                    console.log('after get', arguments)
-                })
-            });
-        }, 2000);
+            // pythonDHT.put(hashKey, value, function () {
+            //     console.log('after store', arguments);
+            //     pythonDHT.get(hashKey, function () {
+            //         console.log('after get', arguments)
+            //     })
+            // });
+        }, 5000);
     });
 }
 
@@ -128,7 +135,13 @@ function Seed(address, port) {
 }
 
 function getHash(value) {
+    // return value;
     var hash_sha256ripemd160 = Hash.sha256ripemd160(new Buffer(value)).toString('hex');
-    var hash_sha1_sha256ripemd160 = Hash.sha1(new Buffer(hash_sha256ripemd160)).toString('hex');
+    // return hash_sha256ripemd160; // blockstack, but not working for DHT servers, just mirror.blockstack.org 6266
+    return getFullHashFromHash(hash_sha256ripemd160);
+}
+
+function getFullHashFromHash(hash) {
+    var hash_sha1_sha256ripemd160 = Hash.sha1(new Buffer(hash)).toString('hex');
     return hash_sha1_sha256ripemd160;
 }

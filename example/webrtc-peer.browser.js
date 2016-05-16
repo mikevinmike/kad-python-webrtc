@@ -28,12 +28,14 @@
             'use strict';
 
             var defaultNickname = "anonymous";
-            var nickname = process.browser ? window.location.hash.substr(1) || defaultNickname : "venus";
+            var nickname = process.browser ? window.location.hash.substr(1) || defaultNickname : "hercules";
             var connectToNicknames = [
-                "hercules",
-                "jupiter"
+                "venus",
+                "jupiter",
+                "hercules"
             ];
             var value = JSON.stringify('buffalo sabres are great');
+            var key = '1a587366368aaf8477d5ddcea2557dcbcc67073e';
 
             var Hash = require('bitcore-lib').crypto.Hash;
             var kademlia = require('kad');
@@ -67,15 +69,16 @@
                 }
 
                 setTimeout(function () {
-                    var hashKey = getHash(value);
-                    webrtcDHT.put(hashKey, value, logPut);
-                    setTimeout(function () {
+                    var hashKey = getFullHashFromHash(key);
+                    // webrtcDHT.put(hashKey, value, logPut);
+                    setInterval(function () {
                         webrtcDHT.get(hashKey, logGet);
                     }, 10000);
 
                 }, 10000);
 
                 function connectWebRTC(peerId) {
+                    console.log('try to connect with', peerId);
                     webrtcDHT.connect({nick: peerId}, logConnect);
                 }
 
@@ -92,9 +95,14 @@
                 }
             });
 
+
             function getHash(value) {
                 var hash_sha256ripemd160 = Hash.sha256ripemd160(new Buffer(value)).toString('hex');
-                var hash_sha1_sha256ripemd160 = Hash.sha1(new Buffer(hash_sha256ripemd160)).toString('hex');
+                return getFullHashFromHash(hash_sha256ripemd160);
+            }
+
+            function getFullHashFromHash(hash) {
+                var hash_sha1_sha256ripemd160 = Hash.sha1(new Buffer(hash)).toString('hex');
                 return hash_sha1_sha256ripemd160;
             }
         }).call(this, require('_process'), require("buffer").Buffer)
@@ -189,7 +197,7 @@
                     socket['on' + eventName] = function () {
                         if (typeof existingCallback === 'function') {
                             existingCallback.apply(socket, arguments);
-                        }
+            }
                         callback.apply(socket, arguments);
                     }
                 }
@@ -32245,12 +32253,12 @@
                     for (var i = 0; i < thatSigBytes; i++) {
                         var thatByte = (thatWords[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
                         thisWords[(thisSigBytes + i) >>> 2] |= thatByte << (24 - ((thisSigBytes + i) % 4) * 8);
-                    }
+            }
                 } else if (thatWords.length > 0xffff) {
                     // Copy one word at a time
                     for (var i = 0; i < thatSigBytes; i += 4) {
                         thisWords[(thisSigBytes + i) >>> 2] = thatWords[i >>> 2];
-                    }
+            }
                 } else {
                     // Copy all words at once
                     thisWords.push.apply(thisWords, thatWords);
@@ -32361,7 +32369,7 @@
     82: [function (require, module, exports) {
         module.exports = {
             "name": "bitcore-lib",
-            "version": "0.13.14",
+            "version": "0.13.15",
             "description": "A pure and powerful JavaScript Bitcoin library.",
             "author": {
                 "name": "BitPay",
@@ -32460,19 +32468,23 @@
                 "sinon": "^1.13.0"
             },
             "license": "MIT",
-            "gitHead": "29bf7e7d90f067f83d686193e85077445fd9dcef",
+            "gitHead": "935d5931b02b63bec16e8f589f6bc7ac7f8f862e",
             "bugs": {
                 "url": "https://github.com/bitpay/bitcore-lib/issues"
             },
             "homepage": "https://github.com/bitpay/bitcore-lib#readme",
-            "_id": "bitcore-lib@0.13.14",
-            "_shasum": "c64574ed7732a4cb601cf710a2ee7181c68fda82",
+            "_id": "bitcore-lib@0.13.15",
+            "_shasum": "7d900146277ca8657132ca05e0c12df6fa3ca6c8",
             "_from": "bitcore-lib@>=0.13.14 <0.14.0",
-            "_npmVersion": "2.14.20",
-            "_nodeVersion": "4.4.1",
+            "_npmVersion": "2.15.0",
+            "_nodeVersion": "4.4.2",
             "_npmUser": {
                 "name": "braydonf",
                 "email": "braydon@bitpay.com"
+            },
+            "dist": {
+                "shasum": "7d900146277ca8657132ca05e0c12df6fa3ca6c8",
+                "tarball": "https://registry.npmjs.org/bitcore-lib/-/bitcore-lib-0.13.15.tgz"
             },
             "maintainers": [
                 {
@@ -32492,17 +32504,12 @@
                     "email": "patrick@bitpay.com"
                 }
             ],
-            "dist": {
-                "shasum": "c64574ed7732a4cb601cf710a2ee7181c68fda82",
-                "tarball": "http://registry.npmjs.org/bitcore-lib/-/bitcore-lib-0.13.14.tgz"
-            },
             "_npmOperationalInternal": {
-                "host": "packages-12-west.internal.npmjs.com",
-                "tmp": "tmp/bitcore-lib-0.13.14.tgz_1458831437826_0.7409968639258295"
+                "host": "packages-16-east.internal.npmjs.com",
+                "tmp": "tmp/bitcore-lib-0.13.15.tgz_1461369703166_0.2561617298051715"
             },
             "directories": {},
-            "_resolved": "http://registry.npmjs.org/bitcore-lib/-/bitcore-lib-0.13.14.tgz",
-            "readme": "ERROR: No README data found!"
+            "_resolved": "https://registry.npmjs.org/bitcore-lib/-/bitcore-lib-0.13.15.tgz"
         }
 
     }, {}],
@@ -32752,7 +32759,7 @@
                     if (iters++ > 10) {
                         if (expandBy) bits += expandBy;
                         else throw new Error('too many ID collisions, use more bits')
-                    }
+            }
 
                     var id = hat(bits, base);
                 } while (Object.hasOwnProperty.call(hats, id));
@@ -34098,6 +34105,7 @@
          */
         Bucket.prototype.addContact = function (contact) {
             assert(contact instanceof Contact, 'Invalid contact supplied');
+            assert(this.getSize() < constants.K, 'Bucket size cannot exceed K');
 
             if (!this.hasContact(contact.nodeID)) {
                 var index = _.sortedIndex(this._contacts, contact, function (contact) {
@@ -34246,6 +34254,15 @@
         };
 
         /**
+         * Validator function for determining if contact is okay
+         * @abstract
+         * @returns {Boolean}
+         */
+        Contact.prototype.valid = function () {
+            return true;
+        };
+
+        /**
          * Unimplemented stub, called when no nodeID is passed to constructor.
          * @private
          * @abstract
@@ -34296,6 +34313,14 @@
          */
         AddressPortContact.prototype._createNodeID = function () {
             return utils.createID(this.toString());
+        };
+
+        /**
+         * Ensures that the address and port are valid
+         * @returns {Boolean}
+         */
+        AddressPortContact.prototype.valid = function () {
+            return this.port > 0 && this.port < 65536;
         };
 
         /**
@@ -35431,7 +35456,7 @@
             var bucket = this._buckets[index];
 
             this._log.debug('removing contact %j', contact);
-            assert(index < constants.B);
+            assert(index < constants.B, 'Bucket index may not exceed B');
 
             if (!bucket) {
                 return false;
@@ -35806,7 +35831,7 @@
             var bucketIndex = utils.getBucketIndex(this._self.nodeID, contact.nodeID);
 
             this._log.debug('updating contact %j', contact);
-            assert(bucketIndex < constants.B);
+            assert(bucketIndex < constants.B, 'Bucket index cannot exceed B');
 
             if (!this._buckets[bucketIndex]) {
                 this._log.debug('creating new bucket for contact at index %d', bucketIndex);
@@ -35883,10 +35908,19 @@
             this._rpc.send(head, ping, function (err) {
                 if (err) {
                     self._log.debug('head contact did not respond, replacing with new');
+
+                    // NB: It's possible that the head contact has changed between pings
+                    // NB: timeout, so we need to make sure that we get the *most* stale
+                    // NB: contact.
+                    head = bucket.getContact(0);
+
                     bucket.removeContact(head);
                     bucket.addContact(contact);
                     self.emit('drop', head, bucket, bucket.indexOf(head));
                     self.emit('add', contact, bucket, bucket.indexOf(contact));
+                } else {
+                    bucket.removeContact(head);
+                    bucket.addContact(head);
                 }
 
                 if (callback) {
@@ -36130,7 +36164,7 @@
                         self._pendingCalls[message.id] = {
                             timestamp: Date.now(),
                             callback: callback
-                        };
+        };
                     } else {
                         self._log.debug('not waiting on callback for message %s', message.id);
                     }
@@ -36480,7 +36514,7 @@
                     });
                 });
 
-                this._server.listen(this._contact.port, this._contact.address, done);
+                this._server.listen(this._contact.port, done);
             };
 
             /**
@@ -36509,6 +36543,11 @@
                     this._queuedResponses[parsed.id].end(data);
                     delete this._queuedResponses[parsed.id];
                     return;
+                }
+
+                if (!contact.valid()) {
+                    this._log.warn('Refusing to send message to invalid contact');
+                    return this.receive(null);
                 }
 
                 var req = self._protocol.request({
@@ -36618,7 +36657,7 @@
                 });
 
                 this._socket.on('listening', done);
-                this._socket.listen(this._contact.port, this._contact.address);
+                this._socket.listen(this._contact.port);
             };
 
             /**
@@ -36635,6 +36674,11 @@
                     this._queuedResponses[parsed.id].end(data);
                     delete this._queuedResponses[parsed.id];
                     return;
+                }
+
+                if (!contact.valid()) {
+                    this._log.warn('Refusing to send message to invalid contact');
+                    return this.receive(null);
                 }
 
                 var sock = net.createConnection(contact.port, contact.address);
@@ -36760,7 +36804,7 @@
         UDPTransport.prototype._open = function (done) {
             var self = this;
 
-            function createSocket(address, port) {
+            function createSocket(port) {
                 self._socket = dgram.createSocket(
                     {type: 'udp4', reuseAddr: false},
                     self.receive.bind(self)
@@ -36772,10 +36816,10 @@
                     self.emit('error', err);
                 });
 
-                self._socket.bind(port, address);
+                self._socket.bind(port);
             }
 
-            createSocket(self._contact.address, self._contact.port);
+            createSocket(self._contact.port);
         };
 
         /**
@@ -37123,16 +37167,16 @@
                                 callback(err);
                                 callback = function () {
                                 };
-                            }
-                            else {
+                }
+                else {
                                 completed += 1;
                                 if (completed >= arr.length) {
                                     callback();
-                                }
-                                else {
+                    }
+                    else {
                                     iterate();
-                                }
-                            }
+                    }
+                }
                         });
                     };
                     iterate();
@@ -37166,21 +37210,21 @@
                                 started += 1;
                                 running += 1;
                                 iterator(arr[started - 1], function (err) {
-                                    if (err) {
-                                        callback(err);
-                                        callback = function () {
-                                        };
-                                    }
-                                    else {
-                                        completed += 1;
-                                        running -= 1;
-                                        if (completed >= arr.length) {
-                                            callback();
-                                        }
-                                        else {
-                                            replenish();
-                                        }
-                                    }
+                        if (err) {
+                            callback(err);
+                            callback = function () {
+                            };
+                        }
+                        else {
+                            completed += 1;
+                            running -= 1;
+                            if (completed >= arr.length) {
+                                callback();
+                            }
+                            else {
+                                replenish();
+                            }
+                        }
                                 });
                             }
                         })();
@@ -37386,7 +37430,7 @@
                             var fn = function (left, right) {
                                 var a = left.criteria, b = right.criteria;
                                 return a < b ? -1 : a > b ? 1 : 0;
-                            };
+                };
                             callback(null, _map(results.sort(fn), function (x) {
                                 return x.value;
                             }));
@@ -37446,7 +37490,7 @@
                                 var safeResults = {};
                                 _each(_keys(results), function (rkey) {
                                     safeResults[rkey] = results[rkey];
-                                });
+                    });
                                 safeResults[k] = args;
                                 callback(err, safeResults);
                                 // stop subsequent errors hitting callback multiple times
@@ -37473,7 +37517,7 @@
                                     removeListener(listener);
                                     task[task.length - 1](taskCallback, results);
                                 }
-                            };
+                };
                             addListener(listener);
                         }
                     });
@@ -37496,7 +37540,7 @@
                                 task(function (err, result) {
                                     seriesCallback(!err || finalAttempt, {err: err, result: result});
                                 }, wrappedResults);
-                            };
+                };
                         };
                         while (times) {
                             attempts.push(retryAttempt(task, !(times -= 1)));
@@ -37538,7 +37582,7 @@
                                 }
                                 async.setImmediate(function () {
                                     iterator.apply(null, args);
-                                });
+                    });
                             }
                         };
                     };
@@ -37555,9 +37599,9 @@
                                     var args = Array.prototype.slice.call(arguments, 1);
                                     if (args.length <= 1) {
                                         args = args[0];
-                                    }
+                        }
                                     callback.call(null, err, args);
-                                });
+                    });
                             }
                         }, callback);
                     }
@@ -37609,7 +37653,7 @@
                                 var args = Array.prototype.slice.call(arguments, 1);
                                 if (args.length <= 1) {
                                     args = args[0];
-                                }
+                    }
                                 results[k] = args;
                                 callback(err);
                             });
@@ -37784,12 +37828,12 @@
                                     workers -= 1;
                                     if (task.callback) {
                                         task.callback.apply(task, arguments);
-                                    }
+                        }
                                     if (q.drain && q.tasks.length + workers === 0) {
                                         q.drain();
                                     }
                                     q.process();
-                                };
+                    };
                                 var cb = only_once(next);
                                 worker(task.data, cb);
                             }
@@ -37908,7 +37952,7 @@
                                 tasks.push({
                                     data: task,
                                     callback: typeof callback === 'function' ? callback : null
-                                });
+                    });
                                 cargo.drained = false;
                                 if (cargo.saturated && tasks.length === payload) {
                                     cargo.saturated();
@@ -37941,8 +37985,8 @@
                                 _each(ts, function (data) {
                                     if (data.callback) {
                                         data.callback.apply(null, args);
-                                    }
-                                });
+                        }
+                    });
 
                                 process();
                             });
@@ -37966,13 +38010,13 @@
                                 if (err) {
                                     if (console.error) {
                                         console.error(err);
-                                    }
+                        }
                                 }
                                 else if (console[name]) {
                                     _each(args, function (x) {
                                         console[name](x);
-                                    });
-                                }
+                        });
+                    }
                             }
                         }]));
                     };
@@ -38009,7 +38053,7 @@
                                 delete queues[key];
                                 for (var i = 0, l = q.length; i < l; i++) {
                                     q[i].apply(null, arguments);
-                                }
+                    }
                             }]));
                         }
                     };
@@ -38609,7 +38653,7 @@
                                 var starti = i - 1
                                     , slashed = parser.slashed
                                     , unicodeI = parser.unicodeI
-                                    ;
+            ;
                                 STRING_BIGLOOP: while (true) {
                                     if (clarinet.DEBUG)
                                         console.log(i, c, clarinet.STATE[parser.state]
@@ -38935,7 +38979,7 @@
                                 out = colors[theme[style][i]](out);
                             }
                             return out;
-                        }
+        }
                         return colors[theme[style]](str);
                     };
                 })(style)
@@ -39150,7 +39194,7 @@
                             if (options[index]) {
                                 result = result + soul[index][randomNumber(soul[index].length)];
                             }
-                        }
+        }
                     }
                 }
                 return result;
@@ -39474,7 +39518,7 @@
                     fs.readFile(adapter.datadir + key, function (err, contents) {
                         if (err) {
                             return stream.emit('error', err);
-                        }
+        }
 
                         current++;
                         stream.push({key: key, value: contents.toString()});
@@ -41343,8 +41387,8 @@
                 return Object.prototype.toString.call(o);
             }
 
-        }).call(this, {"isBuffer": require("../../../../../../../../../../../../../usr/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-    }, {"../../../../../../../../../../../../../usr/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js": 363}],
+        }).call(this, {"isBuffer": require("../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
+    }, {"../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js": 363}],
     138: [function (require, module, exports) {
         arguments[4][74][0].apply(exports, arguments)
     }, {"dup": 74}],
@@ -41368,15 +41412,38 @@
                 module.exports = process.nextTick;
             }
 
-            function nextTick(fn) {
-                var args = new Array(arguments.length - 1);
-                var i = 0;
-                while (i < args.length) {
-                    args[i++] = arguments[i];
+            function nextTick(fn, arg1, arg2, arg3) {
+                if (typeof fn !== 'function') {
+                    throw new TypeError('"callback" argument must be a function');
                 }
-                process.nextTick(function afterTick() {
-                    fn.apply(null, args);
-                });
+                var len = arguments.length;
+                var args, i;
+                switch (len) {
+                    case 0:
+                    case 1:
+                        return process.nextTick(fn);
+                    case 2:
+                        return process.nextTick(function afterTickOne() {
+                            fn.call(null, arg1);
+                        });
+                    case 3:
+                        return process.nextTick(function afterTickTwo() {
+                            fn.call(null, arg1, arg2);
+                        });
+                    case 4:
+                        return process.nextTick(function afterTickThree() {
+                            fn.call(null, arg1, arg2, arg3);
+                        });
+                    default:
+                        args = new Array(len - 1);
+                        i = 0;
+                        while (i < args.length) {
+                            args[i++] = arguments[i];
+                        }
+                        return process.nextTick(function afterTick() {
+                            fn.apply(null, args);
+                        });
+                }
             }
 
         }).call(this, require('_process'))
@@ -41691,26 +41758,33 @@
         }).call(this, typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
     }, {}],
     143: [function (require, module, exports) {
-        var Stream = (function () {
-            try {
-                return require('st' + 'ream'); // hack to fix a circular dependency issue when used with browserify
-            } catch (_) {
-            }
-        }());
-        exports = module.exports = require('./lib/_stream_readable.js');
-        exports.Stream = Stream || exports;
-        exports.Readable = exports;
-        exports.Writable = require('./lib/_stream_writable.js');
-        exports.Duplex = require('./lib/_stream_duplex.js');
-        exports.Transform = require('./lib/_stream_transform.js');
-        exports.PassThrough = require('./lib/_stream_passthrough.js');
+        (function (process) {
+            var Stream = (function () {
+                try {
+                    return require('st' + 'ream'); // hack to fix a circular dependency issue when used with browserify
+                } catch (_) {
+                }
+            }());
+            exports = module.exports = require('./lib/_stream_readable.js');
+            exports.Stream = Stream || exports;
+            exports.Readable = exports;
+            exports.Writable = require('./lib/_stream_writable.js');
+            exports.Duplex = require('./lib/_stream_duplex.js');
+            exports.Transform = require('./lib/_stream_transform.js');
+            exports.PassThrough = require('./lib/_stream_passthrough.js');
 
+            if (!process.browser && process.env.READABLE_STREAM === 'disable' && Stream) {
+                module.exports = Stream;
+            }
+
+        }).call(this, require('_process'))
     }, {
         "./lib/_stream_duplex.js": 132,
         "./lib/_stream_passthrough.js": 133,
         "./lib/_stream_readable.js": 134,
         "./lib/_stream_transform.js": 135,
-        "./lib/_stream_writable.js": 136
+        "./lib/_stream_writable.js": 136,
+        "_process": 364
     }],
     144: [function (require, module, exports) {
 
@@ -41903,7 +41977,7 @@
     151: [function (require, module, exports) {
         arguments[4][137][0].apply(exports, arguments)
     }, {
-        "../../../../../../../../../../../../../usr/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js": 363,
+        "../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js": 363,
         "dup": 137
     }],
     152: [function (require, module, exports) {
@@ -41929,6 +42003,7 @@
         "./lib/_stream_readable.js": 148,
         "./lib/_stream_transform.js": 149,
         "./lib/_stream_writable.js": 150,
+        "_process": 364,
         "dup": 143
     }],
     158: [function (require, module, exports) {
@@ -42778,12 +42853,17 @@
                 var x = a.length
                 var y = b.length
 
-                for (var i = 0, len = Math.min(x, y); i < len; ++i) {
-                    if (a[i] !== b[i]) {
-                        x = a[i]
-                        y = b[i]
-                        break
-                    }
+                var i = 0
+                var len = Math.min(x, y)
+                while (i < len) {
+                    if (a[i] !== b[i]) break
+
+                    ++i
+                }
+
+                if (i !== len) {
+                    x = a[i]
+                    y = b[i]
                 }
 
                 if (x < y) return -1
@@ -42945,6 +43025,7 @@
 
             Buffer.prototype.compare = function compare(b) {
                 if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
+                if (this === b) return 0
                 return Buffer.compare(this, b)
             }
 
@@ -43962,12 +44043,17 @@
         var Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array
 
         function init() {
+            var i
             var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-            for (var i = 0, len = code.length; i < len; ++i) {
+            var len = code.length
+
+            for (i = 0; i < len; i++) {
                 lookup[i] = code[i]
-                revLookup[code.charCodeAt(i)] = i
             }
 
+            for (i = 0; i < len; ++i) {
+                revLookup[code.charCodeAt(i)] = i
+            }
             revLookup['-'.charCodeAt(0)] = 62
             revLookup['_'.charCodeAt(0)] = 63
         }
@@ -43999,8 +44085,8 @@
 
             for (i = 0, j = 0; i < l; i += 4, j += 3) {
                 tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
-                arr[L++] = (tmp >> 16) & 0xFF
-                arr[L++] = (tmp >> 8) & 0xFF
+                arr[L++] = (tmp & 0xFF0000) >> 16
+                arr[L++] = (tmp & 0xFF00) >> 8
                 arr[L++] = tmp & 0xFF
             }
 
@@ -44962,7 +45048,6 @@
                 this.state.fill(0)
                 this.cache = new Buffer('')
             }
-
 // from http://bitwiseshiftleft.github.io/sjcl/doc/symbols/src/core_gcm.js.html
 // by Juho Vähä-Herttua
             GHASH.prototype.ghash = function (block) {
@@ -46377,7 +46462,7 @@
                         while (true) {
                             if (keyLen === 0) {
                                 break
-                            }
+        }
                             if (i === md_buf.length) {
                                 break
                             }
@@ -49499,7 +49584,7 @@
 
             BN.prototype.redShl = function redShl(num) {
                 assert(this.red, 'redShl works only with red numbers');
-                return this.red.shl(this, num);
+                return this.red.ushl(this, num);
             };
 
             BN.prototype.redMul = function redMul(num) {
@@ -53262,7 +53347,7 @@
                 }
             ],
             "directories": {},
-            "_resolved": "http://registry.npmjs.org/elliptic/-/elliptic-6.2.3.tgz",
+            "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.2.3.tgz",
             "readme": "ERROR: No README data found!"
         }
 
@@ -58705,8 +58790,8 @@
                 while (++queueIndex < len) {
                     if (currentQueue) {
                         currentQueue[queueIndex].run();
-                    }
-                }
+            }
+        }
                 queueIndex = -1;
                 len = queue.length;
             }
@@ -58772,7 +58857,7 @@
     }, {}],
     365: [function (require, module, exports) {
         (function (global) {
-            /*! https://mths.be/punycode v1.4.1 by @mathias */
+            /*! https://mths.be/punycode v1.4.0 by @mathias */
             ;
             (function (root) {
 
@@ -59259,7 +59344,7 @@
                      * @memberOf punycode
                      * @type String
                      */
-                    'version': '1.4.1',
+                    'version': '1.3.2',
                     /**
                      * An object of methods to convert from JavaScript's internal character
                      * representation (UCS-2) to Unicode code points, and back.
@@ -59667,8 +59752,30 @@
         arguments[4][139][0].apply(exports, arguments)
     }, {"dup": 139}],
     377: [function (require, module, exports) {
-        arguments[4][140][0].apply(exports, arguments)
-    }, {"_process": 364, "dup": 140}],
+        (function (process) {
+            'use strict';
+
+            if (!process.version ||
+                process.version.indexOf('v0.') === 0 ||
+                process.version.indexOf('v1.') === 0 && process.version.indexOf('v1.8.') !== 0) {
+                module.exports = nextTick;
+            } else {
+                module.exports = process.nextTick;
+            }
+
+            function nextTick(fn) {
+                var args = new Array(arguments.length - 1);
+                var i = 0;
+                while (i < args.length) {
+                    args[i++] = arguments[i];
+                }
+                process.nextTick(function afterTick() {
+                    fn.apply(null, args);
+                });
+            }
+
+        }).call(this, require('_process'))
+    }, {"_process": 364}],
     378: [function (require, module, exports) {
         arguments[4][142][0].apply(exports, arguments)
     }, {"dup": 142}],
@@ -59677,14 +59784,26 @@
 
     }, {"./lib/_stream_passthrough.js": 371}],
     380: [function (require, module, exports) {
-        arguments[4][143][0].apply(exports, arguments)
+        var Stream = (function () {
+            try {
+                return require('st' + 'ream'); // hack to fix a circular dependency issue when used with browserify
+            } catch (_) {
+            }
+        }());
+        exports = module.exports = require('./lib/_stream_readable.js');
+        exports.Stream = Stream || exports;
+        exports.Readable = exports;
+        exports.Writable = require('./lib/_stream_writable.js');
+        exports.Duplex = require('./lib/_stream_duplex.js');
+        exports.Transform = require('./lib/_stream_transform.js');
+        exports.PassThrough = require('./lib/_stream_passthrough.js');
+
     }, {
         "./lib/_stream_duplex.js": 370,
         "./lib/_stream_passthrough.js": 371,
         "./lib/_stream_readable.js": 372,
         "./lib/_stream_transform.js": 373,
-        "./lib/_stream_writable.js": 374,
-        "dup": 143
+        "./lib/_stream_writable.js": 374
     }],
     381: [function (require, module, exports) {
         module.exports = require("./lib/_stream_transform.js")
@@ -59730,6 +59849,7 @@
 
 // Backwards-compat with node 0.4.x
         Stream.Stream = Stream;
+
 
 
 // old-style streams.  Note that the pipe method (the only relevant
@@ -61163,7 +61283,7 @@
                 //to support http.request
                 if (!util.isNull(result.pathname) || !util.isNull(result.search)) {
                     result.path = (result.pathname ? result.pathname : '') +
-                        (result.search ? result.search : '');
+                    (result.search ? result.search : '');
                 }
                 result.href = result.format();
                 return result;
@@ -61945,7 +62065,7 @@
                         configurable: true,
                         value: value
                     })
-                };
+        };
             } catch (e) {
                 return function (obj, name, value) {
                     obj[name] = value;
@@ -62053,7 +62173,7 @@
             if (typeof context === 'object') {
                 forEach(Object_keys(context), function (key) {
                     copy[key] = context[key];
-                });
+        });
             }
             return copy;
         };
@@ -62085,8 +62205,8 @@
                 for (var key in source) {
                     if (hasOwnProperty.call(source, key)) {
                         target[key] = source[key]
-                    }
-                }
+            }
+        }
             }
 
             return target

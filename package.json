@@ -14,8 +14,8 @@
   "license": "ISC",
   "dependencies": {
     "bitcore-lib": "^0.13.14",
-    "kad": "^1.5.3",
-    "kad-webrtc": "^1.4.0",
+    "kad": "^1.5.8",
+    "kad-webrtc": "^1.4.2",
     "merge": "^1.2.0",
     "msgpack-lite": "^0.1.17",
     "ws": "^1.0.1"

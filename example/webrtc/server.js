@@ -18,7 +18,6 @@ ws.on('connection', function (connection) {
 
     connection.on('message', function (data) {
 
-        console.log()
         console.log('websocket message', new Date(), data);
 
         var parsed = JSON.parse(data);

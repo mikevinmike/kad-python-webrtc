@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async": "^1.5.2",
     "bitcore-lib": "^0.13.14",
     "kad": "^1.5.8",
     "kad-webrtc": "^1.4.2",

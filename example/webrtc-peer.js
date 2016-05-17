@@ -2,6 +2,8 @@
 
 'use strict';
 
+var Performance = require('./../lib/performance');
+
 var defaultNickname = "anonymous";
 var nickname = process.browser ? window.location.hash.substr(1) || defaultNickname : "hercules";
 var connectToNicknames = [
@@ -14,6 +16,7 @@ var key = '1a587366368aaf8477d5ddcea2557dcbcc67073e';
 
 var Hash = require('bitcore-lib').crypto.Hash;
 var kademlia = require('kad');
+var async = require('async');
 var WebRTC = require('kad-webrtc');
 var wrtc = require('wrtc');
 var SignalClient = require('./webrtc/signal-client');
@@ -28,20 +31,23 @@ if (process.browser) { // use LocalStorage for browser and MemStore for node.js
     storage = new kademlia.storage.MemStore();
 }
 
+console.log('use nickname', nickname);
+
+var webrtcDHT = new kademlia.Node({
+    transport: WebRTC(WebRTC.Contact({nick: nickname}), {
+        wrtc: wrtc,
+        signaller: signalClient // see examples
+    }),
+    storage: storage
+});
+
+Performance.addNodeToPerformance(webrtcDHT);
+
 webSocket.on('open', function () {
-    console.log('use nickname', nickname);
 
-    var webrtcDHT = new kademlia.Node({
-        transport: WebRTC(WebRTC.Contact({nick: nickname}), {
-            wrtc: wrtc,
-            signaller: signalClient // see examples
-        }),
-        storage: storage
+    async.each(connectToNicknames, function (nickname, done) {
+        connectWebRTC(nickname);
     });
-
-    for (var index in connectToNicknames) {
-        connectWebRTC(connectToNicknames[index]);
-    }
 
     setTimeout(function () {
         var hashKey = getFullHashFromHash(key);
@@ -80,3 +86,7 @@ function getFullHashFromHash(hash) {
     var hash_sha1_sha256ripemd160 = Hash.sha1(new Buffer(hash)).toString('hex');
     return hash_sha1_sha256ripemd160;
 }
+
+
+var performance = require('./../lib/performance');
+performance.addNodeToPerformance(webrtcDHT);

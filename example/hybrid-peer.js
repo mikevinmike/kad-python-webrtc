@@ -2,6 +2,8 @@
 
 'use strict';
 
+var Performance = require('./../lib/performance');
+
 var nickname = 'hercules';
 var connectToNicknames = [
     "venus",
@@ -18,11 +20,13 @@ var DEFAULT_DHT_SERVERS = [
     new Seed('dht.halfmoonlabs.com', DHT_UDP_PORT),
     new Seed('127.0.0.1', DHT_UDP_PORT)
 ];
+
 var value = ('{"avatar": {"url": "https://s3.amazonaws.com/kd4/fredwilson1"}, "bio": "I am a VC", "bitcoin": {"address": "1Fbi3WDPEK6FxKppCXReCPFTgr9KhWhNB7"}, "cover": {"url": "https://s3.amazonaws.com/dx3/fredwilson"}, "facebook": {"proof": {"url": "https://facebook.com/fred.wilson.963871/posts/10100401430876108"}, "username": "fred.wilson.963871"}, "graph": {"url": "https://s3.amazonaws.com/grph/fredwilson"}, "location": {"formatted": "New York City"}, "name": {"formatted": "Fred Wilson"}, "twitter": {"proof": {"url": "https://twitter.com/fredwilson/status/533040726146162689"}, "username": "fredwilson"}, "v": "0.2", "website": "http://avc.com"}')
 var key = '1a587366368aaf8477d5ddcea2557dcbcc67073e';// blockchain entry: fredwilson.id: '1a587366368aaf8477d5ddcea2557dcbcc67073e';
 
 var kad = require('kad');
 var dns = require('dns');
+var async = require('async');
 var isIP = require('net').isIP;
 var dgram = require('dgram');
 var Hash = require('bitcore-lib').crypto.Hash;
@@ -57,19 +61,23 @@ var pythonDHT = new kad.Node({
     storage: sharedStorage,
     router: router
 });
+Performance.addNodeToPerformance(pythonDHT);
+
+console.log('use nickname', nickname);
+
+var webrtcDHT = new kad.Node({
+    transport: multiPythonWebrtcTransport.interfaces.WebRTC,
+    storage: sharedStorage,
+    router: router
+});
+Performance.addNodeToPerformance(webrtcDHT);
 
 webSocket.on('open', function () {
-    console.log('use nickname', nickname);
 
-    var webrtcDHT = new kad.Node({
-        transport: multiPythonWebrtcTransport.interfaces.WebRTC,
-        storage: sharedStorage,
-        router: router
+    async.each(connectToNicknames, function (nickname, done) {
+        connectWebRTC(nickname);
     });
 
-    for (var index in connectToNicknames) {
-        connectWebRTC(connectToNicknames[index]);
-    }
 
     function connectWebRTC(nickname) {
         webrtcDHT.connect({nick: nickname}, function () {
@@ -92,15 +100,18 @@ webSocket.on('open', function () {
     }
 });
 
-
-for (var index in DEFAULT_DHT_SERVERS) {
-    connectPythonRpc(DEFAULT_DHT_SERVERS[index]);
-}
+async.each(DEFAULT_DHT_SERVERS, function (dhtServer, done) {
+    connectPythonRpc(dhtServer);
+})
 
 function connectPythonRpc(seed) {
     console.log('attempt to connect', seed);
     if (!isIP(seed.address)) {
         dns.lookup(seed.address, function (err, ip) {
+            if (err) {
+                console.error('could not resolve dns of ' + seed.address, err);
+                return;
+            }
             seed.address = ip;
             connectPythonRpc(seed);
         });
@@ -121,11 +132,11 @@ function connectPythonRpc(seed) {
             console.log('hashKey', hashKey);
             // pythonDHT.put(hashKey, value, function () {
             //     console.log('after store', arguments);
-            //     pythonDHT.get(hashKey, function () {
-            //         console.log('after get', arguments)
-            //     })
+            pythonDHT.get(hashKey, function () {
+                console.log('after get', arguments)
+            })
             // });
-        }, 5000);
+        }, 30000);
     });
 }
 

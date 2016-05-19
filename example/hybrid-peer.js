@@ -3,6 +3,7 @@
 'use strict';
 
 var Performance = require('./../lib/performance');
+Performance.startMonitoring();
 
 var nickname = 'hercules';
 var connectToNicknames = [

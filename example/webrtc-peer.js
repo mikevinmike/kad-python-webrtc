@@ -3,6 +3,7 @@
 'use strict';
 
 var Performance = require('./../lib/performance');
+Performance.startMonitoring();
 
 var defaultNickname = "anonymous";
 var nickname = process.browser ? window.location.hash.substr(1) || defaultNickname : "hercules";

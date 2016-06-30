@@ -58,6 +58,20 @@ $ npm install
 $ npm install wrtc
 ```````
 
+Compile for browser usage
+------
+To use the peer implementation in the browser perform the following steps:
+
+Set the right server url in example/webrtc/web-socket
+```````
+var serverUrl = 'ws://{CUSTOM_SERVER_IP}:9089';
+```````
+
+Run browserify on example/webrtc-peer.js
+``````
+$ browserify example/webrtc-peer -o example/webrtc-peer.browser.js
+``````
+
 Run
 ------
 For the signalling server (needed for WebRTC) run 

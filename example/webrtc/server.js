@@ -8,34 +8,10 @@ var fs = require('fs');
 var EventEmitter = require('events').EventEmitter;
 var signaller = new EventEmitter();
 var WebSocketServer = require('ws').Server;
-var port = 8080;
+var port = 9089;
 var server = require('http').createServer().listen(port);
-var ws = new WebSocketServer({server: server});
 
-ws.on('connection', function (connection) {
-
-    console.log('WebSocketServer connection');
-
-    connection.on('message', function (data) {
-
-        console.log('websocket message', new Date(), data);
-
-        var parsed = JSON.parse(data);
-        if (parsed.recipient && parsed.message) {
-            return signaller.emit(parsed.recipient, parsed);
-        }
-
-        signaller.on(parsed.announceNick, function (message) {
-            var json = JSON.stringify(message);
-            console.log('websocket sending', json, 'to', parsed.announceNick);
-            connection.send(json);
-        });
-
-        connection.on('close', function () {
-            signaller.removeAllListeners(parsed.announceNick);
-        });
-    });
-});
+createWebSocketServer();
 
 server.on('request', function (req, res) {
     var filePath = __dirname + '/../..' + req.url;
@@ -56,3 +32,32 @@ server.on('request', function (req, res) {
 });
 
 console.log('listening on port', port);
+
+
+function createWebSocketServer() {
+
+    var wss = new WebSocketServer({server: server});
+
+    wss.on('connection', function (connection) {
+
+        console.log('WebSocketServer connection');
+
+        connection.on('message', function (data) {
+
+            var parsed = JSON.parse(data);
+
+            if (parsed.recipient && parsed.message) {
+                return signaller.emit(parsed.recipient, parsed);
+            }
+
+            signaller.on(parsed.announceNick, function (message) {
+                var json = JSON.stringify(message);
+                connection.send(json);
+            });
+
+            connection.on('close', function () {
+                signaller.removeAllListeners(parsed.announceNick);
+            });
+        });
+    });
+}

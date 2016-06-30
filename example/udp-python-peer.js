@@ -10,6 +10,7 @@ var contactInfo = {
     port: DHT_UDP_PORT + 200
 };
 var DEFAULT_DHT_SERVERS = [
+    // use blockstack settings
     new Seed('router.bittorrent.com', 6881),
     new Seed('dht.onename.com', DHT_UDP_PORT),
     new Seed('dht.halfmoonlabs.com', DHT_UDP_PORT),

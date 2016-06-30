@@ -20,5 +20,8 @@
     "merge": "^1.2.0",
     "msgpack-lite": "^0.1.17",
     "ws": "^1.0.1"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.1"
   }
 }

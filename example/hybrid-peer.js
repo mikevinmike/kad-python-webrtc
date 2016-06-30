@@ -49,7 +49,7 @@ var key = '1a587366368aaf8477d5ddcea2557dcbcc67073e';// blockchain entry: fredwi
 
 var kad = require('kad');
 // use Node with own implementation to fetch all values too, which are searched by other peers
-var WebNode = require('./lib/kad-node-for-hybrid-web');
+kad.Node = require('../lib/kad-node-for-hybrid');
 var dns = require('dns');
 var async = require('async');
 var isIP = require('net').isIP;
@@ -91,7 +91,7 @@ pythonDHT.isHybrid = true;
 
 console.log('use nickname', nickname);
 
-var webrtcDHT = new WebNode({
+var webrtcDHT = new kad.Node({
     transport: multiPythonWebrtcTransport.interfaces.WebRTC,
     storage: sharedStorage,
     router: router

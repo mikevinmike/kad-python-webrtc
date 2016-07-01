@@ -10,7 +10,7 @@
     "ws": false,
     "wrtc": false
   },
-  "author": "",
+  "author": "Michael Dabernig",
   "license": "ISC",
   "dependencies": {
     "async": "^1.5.2",

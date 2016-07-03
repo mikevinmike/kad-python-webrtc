@@ -16,7 +16,7 @@ node_modules/kad-webrtc/lib/transport.js
 ``````
 line 11: var RPC = require('../../kad').RPC;
 ``````
-node_modules/kad-webrtc/node_modules/simple-peer/index.js
+node_modules/simple-peer/index.js
 ``````
 line 415: replace function setActiveCandidates(item)
 
